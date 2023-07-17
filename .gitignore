@@ -1,0 +1,10 @@
+*.ipynb_notebooks
+*.ipynb
+
+*.csv
+*.log
+
+
+# Environments
+.venv
+venv/

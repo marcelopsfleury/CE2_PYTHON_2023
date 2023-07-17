@@ -1,0 +1,7 @@
+jupyter==1.0.0
+numpy==1.23.5
+dash>=2.11.1
+plotly>=5.15.0
+pandas>=2.0.3
+dbfread>=2.0.7
+dash-extensions>=1.0.1
