@@ -13,4 +13,10 @@ Para instalar os pacotes necessários use `pip install -r requirements.txt`.
 
 ## Execução do Dashboard
 
-Basta executar o comando `python ./dash_rascunho.py`
+Basta executar o comando `python ./dash_app.py`
+
+## Dashboard
+
+![Selection_035](https://github.com/marcelopsfleury/CE2_PYTHON_2023/assets/40003213/8a2f19c0-548d-4413-ae99-33d7344de894)
+
+![Selection_036](https://github.com/marcelopsfleury/CE2_PYTHON_2023/assets/40003213/fba7c735-ca33-4824-a618-f8e3c0dc1d4f)
