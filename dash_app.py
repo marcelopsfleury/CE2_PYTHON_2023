@@ -2,16 +2,16 @@
 import dash
 from dash import dcc, html
 import plotly.express as px
-import pandas as pd
 import geopandas as gpd
 from shapely import wkt
 from dash import dash_table
+import pickle
 
 # Criar aplicativo
 app = dash.Dash(__name__, external_stylesheets=["https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"])
 
-# Carregar dados
-dados = pd.read_csv('CURSO_CONTEXTO_MAPA.csv')
+with open('CURSO_CONTEXTO_MAPA.pickle', 'rb') as handle:
+    dados = pickle.load(handle)
 
 dados["CO_MODALIDADE"] = dados["CO_MODALIDADE"].apply(lambda x: "EAD" if x == 0 else "Presencial")
 
@@ -262,7 +262,7 @@ def atualizar_mapa(co_grupo_valores, valor_mapa):
         locations='code_muni',  # code_muni como identificador de localização
         featureidkey="properties.code_muni",
         color=valor_mapa,
-        color_continuous_scale='RdBu',
+        color_continuous_scale='Viridis',
         labels={valor_mapa: 'Média da Nota Geral' if valor_mapa == 'NT_GER' else 'Total de Inscritos'},
         hover_data={'code_muni': False, valor_mapa: True, 'name_muni': True,
                     'name_state': True, 'CO_ORGACAD': True, "CO_CATEGAD": True,
