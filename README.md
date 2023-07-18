@@ -11,6 +11,10 @@ Antes de começar a instalar ou usar pacotes em seu ambiente virtual, você prec
 
 Para instalar os pacotes necessários use `pip install -r requirements.txt`.
 
+## Relatório
+
+O arquivo Relatorio.ipynb contém as análises dos dados do dashboard e alguns modelos implementados.
+
 ## Execução do Dashboard
 
 Basta executar o comando `python ./dash_app.py`
