@@ -1,12 +1,11 @@
 # Importar pacotes
 import dash
-from dash import dcc
-from dash import html
+from dash import dcc, html
 import plotly.express as px
 import pandas as pd
-import numpy as np
 import geopandas as gpd
 from shapely import wkt
+from dash import dash_table
 
 # Criar aplicativo
 app = dash.Dash(__name__, external_stylesheets=["https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"])
@@ -151,6 +150,26 @@ app.layout = html.Div(className='container', children=[
             ]),
         ]),
     ]),
+
+    html.Div(className='panel panel-default', style=estilo_painel, children=[
+    html.Div(className='panel-heading', style=estilo_cabecalho_painel, children=[
+        html.H3('Estatísticas de Nota Geral', className='text-center mb-3'),
+    ]),
+    html.Div(className='panel-body', style=estilo_corpo_painel, children=[
+        dash_table.DataTable(
+            id='tabela-estatisticas',
+            columns=[
+                {'name': 'Filtro', 'id': 'filtro'},
+                {'name': 'Média NT_GER', 'id': 'media_nt_ger'},
+                {'name': 'Desvio Padrão NT_GER', 'id': 'desvio_padrao_nt_ger'}
+            ],
+            style_table={'overflowX': 'auto'},
+            style_cell={'textAlign': 'left', 'minWidth': '100px', 'width': '150px', 'maxWidth': '150px'},
+            style_header={'fontWeight': 'bold'},
+        )
+    ]),
+]),
+
 ])
 
 # Callback para atualizar os gráficos
@@ -162,13 +181,14 @@ app.layout = html.Div(className='container', children=[
         dash.dependencies.Input('color-radio', 'value')
     ]
 )
+
 def atualizar_graficos(co_grupo_valores, valor_cor):
     dados_filtrados = dados.copy()
     if co_grupo_valores:
         dados_filtrados = dados_filtrados[dados_filtrados['CO_GRUPO'].isin(co_grupo_valores)]
 
     x = dados_filtrados.groupby(['CO_GRUPO', valor_cor]).agg({'Total_Inscritos': 'sum'}).reset_index()
-    x['Total_Inscritos'] = np.log2(x['Total_Inscritos'].astype(float))
+    x['Total_Inscritos'] = x['Total_Inscritos'].astype(float)
 
     # Categorias únicas do valor_cor
     categorias_unicas = x[valor_cor].unique()
@@ -179,11 +199,11 @@ def atualizar_graficos(co_grupo_valores, valor_cor):
     # Mapear cada categoria para uma cor na sequência de cores
     mapa_cores = {categoria: sequencia_cores[i] for i, categoria in enumerate(categorias_unicas)}
 
-    x_ordenado = x.sort_values(by=['CO_GRUPO', 'Total_Inscritos'], ascending=[True, True])
+    #x_ordenado = x.sort_values(by=['CO_GRUPO', 'Total_Inscritos'], ascending=[True, True])
 
     # Aplicar o mapeamento de cores tanto para o gráfico de barras quanto para o boxplot
     grafico_barras = px.bar(
-        x_ordenado,
+        x,
         y='CO_GRUPO',
         x='Total_Inscritos',
         color=valor_cor,
@@ -192,7 +212,7 @@ def atualizar_graficos(co_grupo_valores, valor_cor):
         template='plotly_white',
         barmode='group',
         color_discrete_map=mapa_cores,
-        labels={'Total_Inscritos': 'Total Inscritos', 'CO_GRUPO': 'Curso'}
+        labels={'Total_Inscritos': 'Total Inscritos', 'CO_GRUPO': 'Curso'},
     )
 
     grafico_barras.update_layout(estilo_grafico_horizontal)
@@ -206,7 +226,7 @@ def atualizar_graficos(co_grupo_valores, valor_cor):
         title='',
         template='plotly_white',
         color_discrete_map=mapa_cores,
-        labels={'NT_GER': 'Nota Geral', 'CO_GRUPO': 'Curso'}
+        labels={'NT_GER': 'Nota Geral', 'CO_GRUPO': 'Curso'},
     )
 
     grafico_boxplot.update_layout(estilo_grafico_horizontal)
@@ -262,6 +282,26 @@ def atualizar_mapa(co_grupo_valores, valor_mapa):
     )
 
     return mapa
+
+@app.callback(
+    dash.dependencies.Output('tabela-estatisticas', 'data'),
+    [dash.dependencies.Input('co-grupo-dropdown', 'value'),
+     dash.dependencies.Input('color-radio', 'value')]
+)
+def atualizar_tabela_estatisticas(co_grupo_valores, valor_cor):
+    dados_filtrados = dados.copy()
+    if co_grupo_valores:
+        dados_filtrados = dados_filtrados[dados_filtrados['CO_GRUPO'].isin(co_grupo_valores)]
+
+    grouped_data = dados_filtrados.groupby(valor_cor)['NT_GER'].agg(['mean', 'std']).reset_index()
+    grouped_data = grouped_data.rename(columns={valor_cor: 'filtro', 'mean': 'media_nt_ger', 'std': 'desvio_padrao_nt_ger'})
+
+    grouped_data['media_nt_ger'] = grouped_data['media_nt_ger'].round(2)
+    grouped_data['desvio_padrao_nt_ger'] = grouped_data['desvio_padrao_nt_ger'].round(2)
+
+    table_data = grouped_data.to_dict('records')
+
+    return table_data
 
 # Executar o app
 if __name__ == '__main__':

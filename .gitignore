@@ -1,7 +1,6 @@
 *.ipynb_notebooks
 *.ipynb
 
-*.csv
 *.log
 
 
