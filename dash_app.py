@@ -11,7 +11,7 @@ from dash import dash_table
 app = dash.Dash(__name__, external_stylesheets=["https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"])
 
 # Carregar dados
-dados = pd.read_csv('./dados_tratados/CURSO_CONTEXTO_MAPA.csv')
+dados = pd.read_csv('CURSO_CONTEXTO_MAPA.csv')
 
 dados["CO_MODALIDADE"] = dados["CO_MODALIDADE"].apply(lambda x: "EAD" if x == 0 else "Presencial")
 
@@ -159,9 +159,10 @@ app.layout = html.Div(className='container', children=[
         dash_table.DataTable(
             id='tabela-estatisticas',
             columns=[
-                {'name': 'Filtro', 'id': 'filtro'},
-                {'name': 'Média NT_GER', 'id': 'media_nt_ger'},
-                {'name': 'Desvio Padrão NT_GER', 'id': 'desvio_padrao_nt_ger'}
+                {'name': 'Curso', 'id':'Curso'},
+                {'name': 'Filtro selecionado', 'id': 'filtro'},
+                {'name': 'Média', 'id': 'media_nt_ger'},
+                {'name': 'Desvio Padrão', 'id': 'desvio_padrao_nt_ger'}
             ],
             style_table={'overflowX': 'auto'},
             style_cell={'textAlign': 'left', 'minWidth': '100px', 'width': '150px', 'maxWidth': '150px'},
@@ -293,11 +294,13 @@ def atualizar_tabela_estatisticas(co_grupo_valores, valor_cor):
     if co_grupo_valores:
         dados_filtrados = dados_filtrados[dados_filtrados['CO_GRUPO'].isin(co_grupo_valores)]
 
-    grouped_data = dados_filtrados.groupby(valor_cor)['NT_GER'].agg(['mean', 'std']).reset_index()
-    grouped_data = grouped_data.rename(columns={valor_cor: 'filtro', 'mean': 'media_nt_ger', 'std': 'desvio_padrao_nt_ger'})
+    grouped_data = dados_filtrados.groupby(['CO_GRUPO', valor_cor])['NT_GER'].agg(['mean', 'std']).reset_index()
+    grouped_data = grouped_data.rename(columns={'CO_GRUPO':'Curso',valor_cor: 'filtro', 'mean': 'media_nt_ger', 'std': 'desvio_padrao_nt_ger'})
 
     grouped_data['media_nt_ger'] = grouped_data['media_nt_ger'].round(2)
     grouped_data['desvio_padrao_nt_ger'] = grouped_data['desvio_padrao_nt_ger'].round(2)
+
+    grouped_data = grouped_data.sort_values(by='media_nt_ger', ascending=False)
 
     table_data = grouped_data.to_dict('records')
 
